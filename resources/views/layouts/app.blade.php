@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#FFFFFF">
     <meta name="description" content="معرض الشياح للستائر — لصاحبه أبو أنس وأولاده. خبرة دمشقية عريقة منذ عام 1988، ننسج خيوط الأناقة لنحيل نوافذكم لوحات تنطق بالجمال.">
     <title>@yield('title', 'الشياح | أصالة الخبرة منذ 1988')</title>
@@ -41,7 +41,7 @@
     </nav>
 </header>
 
-<main class="min-w-0 pb-24 md:pb-0">
+<main class="main-content min-w-0">
     @yield('content')
 </main>
 

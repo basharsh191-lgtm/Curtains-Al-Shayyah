@@ -26,7 +26,16 @@
             'image' => $product->image_url,
             'appointment' => route('appointments.create', ['model' => $product->title]),
         ])->values()),
-        close() { this.active = null },
+        open(index) {
+            if (this.active === null) window.imagePreviewHistory.open();
+            this.active = index;
+        },
+        close() {
+            if (this.active !== null && !window.imagePreviewHistory.close()) this.active = null;
+        },
+        handlePopState() {
+            if (this.active !== null && !window.imagePreviewHistory.isOpen()) this.active = null;
+        },
         matches(categoryValue, materialValue) {
             return (this.category === 'الكل' || this.category === categoryValue)
                 && (this.material === 'الكل' || this.material === materialValue);
@@ -36,6 +45,7 @@
         }
     }"
     @keydown.window.escape="close()"
+    @popstate.window="handlePopState()"
 >
     <div class="container">
         <div class="filters">
@@ -63,7 +73,7 @@
                     class="product-card"
                     x-show="matches(@js($product->category), @js($product->material))"
                 >
-                    <button class="product-media" type="button" @click="active = {{ $loop->index }}" aria-label="عرض صورة {{ $product->title }}">
+                    <button class="product-media" type="button" @click="open({{ $loop->index }})" aria-label="عرض صورة {{ $product->title }}">
                         <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->title }}" loading="lazy">
                         <span class="product-badge">{{ $product->material }}</span>
                         <span class="product-hover-link">عرض الصورة <span>←</span></span>

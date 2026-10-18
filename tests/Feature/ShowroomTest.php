@@ -41,6 +41,20 @@ class ShowroomTest extends TestCase
             ->assertSee('تواصل معنا');
     }
 
+    public function test_image_preview_pages_handle_browser_back_once(): void
+    {
+        foreach ([
+            route('home'),
+            route('products.index'),
+            route('projects.index'),
+        ] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('@popstate.window="handlePopState()"', false)
+                ->assertSee('window.imagePreviewHistory.open()', false);
+        }
+    }
+
     public function test_appointment_request_is_validated_and_saved(): void
     {
         $this->post(route('appointments.store'), [

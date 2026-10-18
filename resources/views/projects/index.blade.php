@@ -16,10 +16,20 @@
     x-data="{
         active: null,
         projects: @js($projects->map(fn ($project) => ['title' => $project->title, 'description' => $project->description, 'category' => $project->category, 'image' => $project->image_url])->values()),
-        close() { this.active = null },
+        open(index) {
+            if (this.active === null) window.imagePreviewHistory.open();
+            this.active = index;
+        },
+        close() {
+            if (this.active !== null && !window.imagePreviewHistory.close()) this.active = null;
+        },
+        handlePopState() {
+            if (this.active !== null && !window.imagePreviewHistory.isOpen()) this.active = null;
+        },
         move(step) { this.active = (this.active + step + this.projects.length) % this.projects.length }
     }"
     @keydown.window.escape="close()"
+    @popstate.window="handlePopState()"
     @keydown.window.arrow-right="if (active !== null) move(-1)"
     @keydown.window.arrow-left="if (active !== null) move(1)"
 >
@@ -41,7 +51,7 @@
         @else
             <div class="projects-grid">
                 @foreach($projects as $index => $project)
-                    <button class="project-card" type="button" @click="active = {{ $index }}" aria-label="عرض {{ $project->title }}">
+                    <button class="project-card" type="button" @click="open({{ $index }})" aria-label="عرض {{ $project->title }}">
                         <img src="{{ asset('storage/' . $project->image) }}" alt="{{ $project->title }}{{ $project->category ? ' — '.$project->category : '' }}" loading="lazy">
                         <span class="project-caption">
                             <h3>{{ $project->title }}</h3>

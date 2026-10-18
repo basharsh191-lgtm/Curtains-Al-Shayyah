@@ -35,9 +35,19 @@
             'name' => $category['name'],
             'image' => 'https://images.unsplash.com/'.$category['image'].'?auto=format&fit=crop&w=2200&q=90',
         ])->values()),
-        close() { this.active = null }
+        open(index) {
+            if (this.active === null) window.imagePreviewHistory.open();
+            this.active = index;
+        },
+        close() {
+            if (this.active !== null && !window.imagePreviewHistory.close()) this.active = null;
+        },
+        handlePopState() {
+            if (this.active !== null && !window.imagePreviewHistory.isOpen()) this.active = null;
+        }
     }"
     @keydown.window.escape="close()"
+    @popstate.window="handlePopState()"
 >
     <div class="container">
         <div class="section-heading">
@@ -47,7 +57,7 @@
         </div>
         <div class="category-grid">
             @foreach($categories as $index => $category)
-                <button class="category-card" type="button" @click="active = {{ $index }}" aria-label="عرض صورة تشكيلات {{ $category['name'] }}">
+                <button class="category-card" type="button" @click="open({{ $index }})" aria-label="عرض صورة تشكيلات {{ $category['name'] }}">
                     <img src="https://images.unsplash.com/{{ $category['image'] }}?auto=format&fit=crop&w=1000&q=82" alt="ستائر {{ $category['name'] }}" style="object-position: {{ $category['position'] }}">
                     <div class="category-copy">
                         <div>
