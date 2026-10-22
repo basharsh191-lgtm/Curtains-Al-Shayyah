@@ -308,6 +308,77 @@
                     @endforeach
                 </section>
 
+                {{-- Visitor analytics --}}
+                @php
+                    $visitChange = $analytics['visits']['this_month'] - $analytics['visits']['last_month'];
+                    $appointmentChange = $analytics['appointments']['this_month'] - $analytics['appointments']['last_month'];
+                    $mostViewedProduct = $analytics['most_viewed_product'];
+                @endphp
+                <section class="mb-8" aria-labelledby="analytics-title">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-semibold text-[#202A35]" id="analytics-title">تحليلات الزيارات ومؤشرات الأداء</h2>
+                        <p class="mt-1 text-sm text-[#7A838D]">أعداد الزوار الفريدين والطلبات وموديلات الستائر الأكثر مشاهدة.</p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <article class="rounded-2xl border border-[#E5E1DA] bg-white p-5 shadow-[0_8px_24px_rgba(32,42,53,0.04)] sm:p-6">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-medium text-[#5B6470]">إجمالي الزيارات الفريدة</p>
+                                    <p class="mt-3 text-3xl font-semibold tracking-tight text-[#202A35]">{{ number_format($analytics['visits']['total']) }}</p>
+                                </div>
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E9EEF2] text-[#344252]">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </span>
+                            </div>
+                            <p class="mt-4 border-t border-[#F0EDE8] pt-3 text-xs leading-relaxed text-[#7A838D]">
+                                هذا الشهر: {{ number_format($analytics['visits']['this_month']) }} · الشهر الماضي: {{ number_format($analytics['visits']['last_month']) }}
+                                @if($visitChange !== 0)
+                                    <span class="{{ $visitChange > 0 ? 'text-[#28704F]' : 'text-[#A23D3D]' }}">({{ $visitChange > 0 ? 'زيادة' : 'انخفاض' }} {{ number_format(abs($visitChange)) }})</span>
+                                @else
+                                    <span>(دون تغيير)</span>
+                                @endif
+                            </p>
+                        </article>
+
+                        <article class="rounded-2xl border border-[#E5E1DA] bg-white p-5 shadow-[0_8px_24px_rgba(32,42,53,0.04)] sm:p-6">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-medium text-[#5B6470]">إجمالي طلبات المعاينة</p>
+                                    <p class="mt-3 text-3xl font-semibold tracking-tight text-[#202A35]">{{ number_format($stats['appointments']) }}</p>
+                                </div>
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F6EBD9] text-[#79552F]">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18m3 5-2 2-1-1"/></svg>
+                                </span>
+                            </div>
+                            <p class="mt-4 border-t border-[#F0EDE8] pt-3 text-xs leading-relaxed text-[#7A838D]">
+                                هذا الشهر: {{ number_format($analytics['appointments']['this_month']) }} · الشهر الماضي: {{ number_format($analytics['appointments']['last_month']) }}
+                                @if($appointmentChange !== 0)
+                                    <span class="{{ $appointmentChange > 0 ? 'text-[#28704F]' : 'text-[#A23D3D]' }}">({{ $appointmentChange > 0 ? 'زيادة' : 'انخفاض' }} {{ number_format(abs($appointmentChange)) }})</span>
+                                @else
+                                    <span>(دون تغيير)</span>
+                                @endif
+                            </p>
+                        </article>
+
+                        <article class="rounded-2xl border border-[#E5E1DA] bg-white p-5 shadow-[0_8px_24px_rgba(32,42,53,0.04)] sm:p-6">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-[#5B6470]">الستائر الأكثر مشاهدة</p>
+                                    <p class="mt-3 truncate text-2xl font-semibold tracking-tight text-[#202A35]">
+                                        {{ $mostViewedProduct?->product_name ?: 'لا توجد مشاهدات بعد' }}
+                                    </p>
+                                </div>
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E6F1EA] text-[#28704F]">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 4h16M6 4v16m12-16v16M4 20h16M9 8h6m-6 4h6"/></svg>
+                                </span>
+                            </div>
+                            <p class="mt-4 border-t border-[#F0EDE8] pt-3 text-xs leading-relaxed text-[#7A838D]">
+                                {{ number_format((int) ($mostViewedProduct?->views ?? 0)) }} مشاهدة لصفحة الموديل
+                            </p>
+                        </article>
+                    </div>
+                </section>
+
                 {{-- Quick management actions --}}
                 <section class="mb-8" id="quick-actions" aria-labelledby="quick-actions-title">
                     <div class="mb-4 flex items-end justify-between gap-3">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Curtain;
 use App\Models\Project;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ShowroomController extends Controller
@@ -116,10 +117,12 @@ class ShowroomController extends Controller
         ]);
     }
 
-    public function show(string $slug): View
+    public function show(Request $request, string $slug): View
     {
         $product = collect($this->catalogProducts())->firstWhere('slug', $slug);
         abort_if($product === null, 404);
+
+        $request->attributes->set('analytics_product_name', $product['name']);
 
         return view('products.show', [
             'product' => $product,

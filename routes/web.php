@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CurtainController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ShowroomController;
+use App\Http\Middleware\TrackVisitor;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -28,9 +29,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::get('/', [ShowroomController::class, 'home'])->name('home');
-Route::get('/products', [ShowroomController::class, 'products'])->name('products.index');
-Route::get('/products/{slug}', [ShowroomController::class, 'show'])->name('products.show');
-Route::get('/projects', [ShowroomController::class, 'projects'])->name('projects.index');
-Route::get('/appointments/create', [ShowroomController::class, 'createAppointment'])->name('appointments.create');
+Route::middleware(TrackVisitor::class)->group(function () {
+    Route::get('/', [ShowroomController::class, 'home'])->name('home');
+    Route::get('/products', [ShowroomController::class, 'products'])->name('products.index');
+    Route::get('/products/{slug}', [ShowroomController::class, 'show'])->name('products.show');
+    Route::get('/projects', [ShowroomController::class, 'projects'])->name('projects.index');
+    Route::get('/appointments/create', [ShowroomController::class, 'createAppointment'])->name('appointments.create');
+});
+
 Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
