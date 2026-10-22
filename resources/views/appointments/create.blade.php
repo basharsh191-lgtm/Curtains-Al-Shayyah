@@ -3,6 +3,10 @@
 @section('title', 'احجز زيارة منزلية | الشياح')
 
 @section('content')
+<div
+    x-data="{ isSubmitting: false, showConfirmation: @js(session()->has('appointment_confirmation')) }"
+    @keydown.escape.window="showConfirmation = false"
+>
 {{-- Header --}}
 <section class="page-hero">
     <div class="container">
@@ -34,11 +38,13 @@
         </div>
     </aside>
 
-    <form class="booking-form" method="POST" action="{{ route('appointments.store') }}">
+    <form
+        class="booking-form"
+        method="POST"
+        action="{{ route('appointments.store') }}"
+        @submit="if (isSubmitting) { $event.preventDefault(); } else { isSubmitting = true; }"
+    >
         @csrf
-        @if(session('success'))
-            <div class="success-message" role="status">{{ session('success') }}</div>
-        @endif
         @if(request('model'))
             <p class="success-message">طلب معاينة للموديل: {{ request('model') }}</p>
             <input type="hidden" name="model" value="{{ request('model') }}">
@@ -111,7 +117,85 @@
         </div>
 
         {{-- Actions --}}
-        <button class="button button-dark form-submit" type="submit">إرسال طلب الزيارة <span>←</span></button>
+        <button
+            class="button button-dark form-submit"
+            type="submit"
+            :disabled="isSubmitting"
+            :aria-disabled="isSubmitting.toString()"
+            :class="{ 'cursor-wait opacity-70': isSubmitting }"
+        >
+            <span x-show="!isSubmitting">إرسال طلب الزيارة <span aria-hidden="true">←</span></span>
+            <span x-cloak x-show="isSubmitting" role="status">جارٍ إرسال الطلب...</span>
+        </button>
     </form>
 </section>
+
+<template x-if="showConfirmation">
+    <div
+        class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#202A35]/60 px-4 py-6 backdrop-blur-sm"
+        x-transition.opacity
+        @click.self="showConfirmation = false"
+        x-init="$nextTick(() => { $refs.confirmation.scrollIntoView({ behavior: 'smooth', block: 'center' }); $refs.confirmation.focus(); })"
+    >
+        @php
+            $confirmation = session('appointment_confirmation', []);
+            $confirmationName = $confirmation['client_name'] ?? '';
+            $confirmationPhone = $confirmation['phone'] ?? '';
+            $confirmationDate = $confirmation['preferred_date'] ?? '';
+            $whatsappMessage = 'مرحباً بمعرض الشياح، تم إرسال طلب زيارة منزلية باسم '.$confirmationName
+                .'، رقم الهاتف '.$confirmationPhone
+                .'، والتاريخ المفضل '.$confirmationDate.'. أود متابعة الطلب.';
+        @endphp
+        <section
+            x-ref="confirmation"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="appointment-confirmation-title"
+            class="my-auto w-full max-w-xl rounded-3xl border border-[#D8C19F] bg-[#FCFAF6] p-6 text-center shadow-[0_24px_80px_rgba(20,24,29,0.3)] outline-none sm:p-10"
+        >
+            <span class="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full border border-[#E2D1B8] bg-[#F3EBDF] text-3xl text-[#79552F]" aria-hidden="true">✓</span>
+            <p class="mt-6 text-xs font-bold tracking-[0.18em] text-[#927047]">معرض الشياح للستائر</p>
+            <h2 class="mt-3 text-2xl font-semibold leading-relaxed text-[#202A35] sm:text-3xl" id="appointment-confirmation-title">
+                تم استلام طلبكم بنجاح ✨
+            </h2>
+            <p class="mx-auto mt-4 max-w-lg text-sm leading-8 text-[#5B6470] sm:text-base">
+                شكراً لثقتكم بمعرض الشياح. طلب المعاينة المنزلية قيد المراجعة حالياً، وسيقوم فريقنا بالتواصل معكم في أقرب وقت لتأكيد الموعد النهائي.
+            </p>
+
+            <dl class="mt-6 grid gap-3 rounded-2xl border border-[#E9E1D5] bg-white/80 p-4 text-right text-sm sm:grid-cols-3">
+                <div>
+                    <dt class="text-xs text-[#7A838D]">الاسم</dt>
+                    <dd class="mt-1 break-words font-semibold text-[#344252]">{{ $confirmationName }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-[#7A838D]">رقم الهاتف</dt>
+                    <dd class="mt-1 break-words font-semibold text-[#344252]" dir="ltr">{{ $confirmationPhone }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-[#7A838D]">التاريخ المفضل</dt>
+                    <dd class="mt-1 font-semibold text-[#344252]" dir="ltr">{{ $confirmationDate }}</dd>
+                </div>
+            </dl>
+
+            <div class="mt-7 grid gap-3 sm:grid-cols-2">
+                <a
+                    class="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#79552F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#604326] focus:outline-none focus:ring-2 focus:ring-[#79552F] focus:ring-offset-2"
+                    href="https://wa.me/963969227248?text={{ rawurlencode($whatsappMessage) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    متابعة الطلب عبر واتساب
+                </a>
+                <a
+                    class="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#D8C19F] bg-white px-5 py-3 text-sm font-semibold text-[#5B4A35] transition hover:bg-[#F6F0E7] focus:outline-none focus:ring-2 focus:ring-[#79552F] focus:ring-offset-2"
+                    href="{{ route('home') }}"
+                >
+                    العودة للرئيسية
+                </a>
+            </div>
+        </section>
+    </div>
+</template>
+</div>
 @endsection

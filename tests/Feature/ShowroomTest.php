@@ -88,6 +88,28 @@ class ShowroomTest extends TestCase
         ]);
     }
 
+    public function test_successful_appointment_submission_shows_confirmation_modal_with_summary_and_actions(): void
+    {
+        $this->followingRedirects()
+            ->post(route('appointments.store'), [
+                'client_name' => 'ليلى',
+                'phone' => '0990000000',
+                'address' => 'المزة',
+                'preferred_date' => now()->addDay()->toDateString(),
+            ])
+            ->assertOk()
+            ->assertSee('تم استلام طلبكم بنجاح ✨')
+            ->assertSee('شكراً لثقتكم بمعرض الشياح.')
+            ->assertSee('ليلى')
+            ->assertSee('0990000000')
+            ->assertSee(now()->addDay()->toDateString())
+            ->assertSee('https://wa.me/963969227248?text=', false)
+            ->assertSee('متابعة الطلب عبر واتساب')
+            ->assertSee('العودة للرئيسية')
+            ->assertSee('isSubmitting')
+            ->assertSee('aria-modal="true"', false);
+    }
+
     public function test_booking_form_uses_dashboard_compatible_field_names(): void
     {
         $this->get(route('appointments.create'))

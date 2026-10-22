@@ -57,6 +57,10 @@ class AppointmentController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('appointments.create')->with('success', 'وصلنا طلبك بكل محبة. سنتواصل معك قريباً لتأكيد موعد الزيارة.');
+        return redirect()->route('appointments.create')->with('appointment_confirmation', [
+            'client_name' => $validated['client_name'],
+            'phone' => $validated['phone'],
+            'preferred_date' => $validated['preferred_date'],
+        ]);
     }
 }
