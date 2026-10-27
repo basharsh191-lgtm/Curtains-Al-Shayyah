@@ -5,6 +5,7 @@
 @section('content')
 <div
     x-data="{ isSubmitting: false, showConfirmation: @js(session()->has('appointment_confirmation')) }"
+    x-init="if (@js(session()->has('appointment_confirmation.booking'))) $dispatch('appointment-booked', @js(session('appointment_confirmation.booking')))"
     @keydown.escape.window="showConfirmation = false"
 >
 {{-- Header --}}

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#FFFFFF">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="معرض الشياح للستائر — لصاحبه أبو أنس وأولاده. خبرة دمشقية عريقة منذ عام 1988، ننسج خيوط الأناقة لنحيل نوافذكم لوحات تنطق بالجمال.">
     <title>@yield('title', 'الشياح | أصالة الخبرة منذ 1988')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +13,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="overflow-x-hidden">
+<body
+    class="overflow-x-hidden"
+    x-data="appointmentManager({
+        updateUrl: @js(route('appointments.manage.update', ['appointment' => 'APPOINTMENT_ID'])),
+        deleteUrl: @js(route('appointments.manage.destroy', ['appointment' => 'APPOINTMENT_ID']))
+    })"
+    @appointment-booked.window="saveBooking($event.detail)"
+>
 {{-- Header --}}
 <header class="site-header" x-data="{ menuOpen: false }">
     <div class="container header-inner">
@@ -40,6 +48,8 @@
         <a class="flex min-h-11 items-center" href="{{ route('appointments.create') }}" @click="menuOpen = false">احجز زيارة منزلية</a>
     </nav>
 </header>
+
+@include('appointments.manage')
 
 <main class="main-content min-w-0">
     @yield('content')

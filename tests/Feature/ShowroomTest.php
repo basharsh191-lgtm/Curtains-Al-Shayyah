@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Appointment;
 use Tests\TestCase;
 
 class ShowroomTest extends TestCase
@@ -108,6 +109,74 @@ class ShowroomTest extends TestCase
             ->assertSee('العودة للرئيسية')
             ->assertSee('isSubmitting')
             ->assertSee('aria-modal="true"', false);
+    }
+
+    public function test_booking_can_be_updated_and_cancelled_with_its_management_token(): void
+    {
+        $this->post(route('appointments.store'), [
+            'client_name' => 'ليلى',
+            'phone' => '0990000000',
+            'address' => 'المزة',
+            'preferred_date' => now()->addDay()->toDateString(),
+            'notes' => 'ملاحظات أولية',
+        ])->assertRedirect(route('appointments.create'));
+
+        $booking = session('appointment_confirmation.booking');
+        $appointment = Appointment::query()->findOrFail($booking['id']);
+        $this->assertSame(hash('sha256', $booking['token']), $appointment->manage_token_hash);
+
+        $this->patchJson(route('appointments.manage.update', $appointment), [
+            'token' => $booking['token'],
+            'address' => 'كفرسوسة',
+            'preferred_date' => now()->addDays(2)->toDateString(),
+            'notes' => 'موعد بعد الظهر',
+        ])
+            ->assertOk()
+            ->assertJsonPath('booking.address', 'كفرسوسة')
+            ->assertJsonPath('booking.notes', 'موعد بعد الظهر');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'address' => 'كفرسوسة',
+            'notes' => 'موعد بعد الظهر',
+        ]);
+
+        $this->deleteJson(route('appointments.manage.destroy', $appointment), [
+            'token' => $booking['token'],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'status' => 'cancelled',
+        ]);
+    }
+
+    public function test_booking_management_requires_the_secret_token_and_rejects_invalid_edits(): void
+    {
+        $appointment = Appointment::query()->create([
+            'client_name' => 'عميل',
+            'phone' => '0990000000',
+            'address' => 'المزة',
+            'preferred_date' => now()->addDay()->toDateString(),
+            'manage_token_hash' => hash('sha256', 'booking-secret-token'),
+        ]);
+
+        $this->patchJson(route('appointments.manage.update', $appointment), [
+            'address' => 'الشعلان',
+            'preferred_date' => now()->addDay()->toDateString(),
+        ])->assertForbidden();
+
+        $this->patchJson(route('appointments.manage.update', $appointment), [
+            'token' => 'booking-secret-token',
+            'address' => 'الشعلان',
+            'preferred_date' => now()->subDay()->toDateString(),
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['preferred_date']);
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointment->id,
+            'address' => 'المزة',
+        ]);
     }
 
     public function test_booking_form_uses_dashboard_compatible_field_names(): void

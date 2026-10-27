@@ -18,6 +18,7 @@ class Appointment extends Model
         'preferred_time',
         'notes',
         'status',
+        'manage_token_hash',
     ];
 
     protected function casts(): array

@@ -38,3 +38,5 @@ Route::middleware(TrackVisitor::class)->group(function () {
 });
 
 Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+Route::patch('/appointments/{appointment}/manage', [AppointmentController::class, 'update'])->name('appointments.manage.update');
+Route::delete('/appointments/{appointment}/manage', [AppointmentController::class, 'destroy'])->name('appointments.manage.destroy');
